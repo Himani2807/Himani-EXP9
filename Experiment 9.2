@@ -1,0 +1,89 @@
+###############################################
+# GitHub Actions Workflow for CI/CD
+###############################################
+name: CI/CD Pipeline
+
+# Trigger the workflow on every push or pull request to the main branch
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+###############################################
+# Define jobs that will run in this workflow
+###############################################
+jobs:
+  build-and-test:
+    # The type of machine to run the job
+    runs-on: ubuntu-latest
+
+    # Define steps in the workflow
+    steps:
+      ###############################################
+      # Step 1 — Checkout repository
+      ###############################################
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      ###############################################
+      # Step 2 — Set up Node.js environment
+      ###############################################
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      ###############################################
+      # Step 3 — Install dependencies
+      ###############################################
+      - name: Install dependencies
+        run: npm ci
+
+      ###############################################
+      # Step 4 — Run tests
+      ###############################################
+      - name: Run tests
+        run: npm test -- --watchAll=false
+
+      ###############################################
+      # Step 5 — Build the project
+      ###############################################
+      - name: Build project
+        run: npm run build
+
+      ###############################################
+      # Step 6 (Optional) — Upload build artifacts
+      ###############################################
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/
+
+  ###############################################
+  # Step 7 — Deployment Job (Optional)
+  ###############################################
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build
+
+      ###############################################
+      # Example Deployment — GitHub Pages
+      ###############################################
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
