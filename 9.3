@@ -1,0 +1,64 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/api', (req, res) => {
+  res.json({ message: 'Hello from Backend!' });
+});
+
+app.listen(PORT, () => {
+  console.log(`Backend server running on port ${PORT}`);
+});
+
+import { useEffect, useState } from "react";
+
+function App() {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetch("http://<BACKEND_EC2_PUBLIC_IP>:5000/api")
+      .then((res) => res.json())
+      .then((data) => setMessage(data.message))
+      .catch((err) => setMessage("Error fetching from backend"));
+  }, []);
+
+  return (
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>Full Stack App on AWS</h1>
+      <p>Backend says: {message}</p>
+    </div>
+  );
+}
+
+export default App;
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  }
+}
